@@ -2,12 +2,13 @@ package com.instagramclone.fragment
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -16,16 +17,17 @@ import com.instagramclone.Constants.TAG
 import com.instagramclone.R
 import com.instagramclone.`interface`.IFollowButton
 import com.instagramclone.adapter.UserAdapter
-import com.instagramclone.adapter.UserAdapterViewHolder
+import com.instagramclone.getFirebaseUser
 import com.instagramclone.model.User
 import com.instagramclone.utils.onMyTextChanged
-import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.fragment_search.view.*
 
 class SearchFragment : Fragment(), IFollowButton {
 
+
     private var mList: ArrayList<User> = ArrayList()
     private val userAdapter = UserAdapter(true, this)
+    private lateinit var recycler_view_search: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,38 +36,47 @@ class SearchFragment : Fragment(), IFollowButton {
 
         val view = inflater.inflate(R.layout.fragment_search, container, false)
 
-        retrieveUsers {
+        this.recycler_view_search = view.recycler_view_search
+        retrieveUsers(completion = {
+            Log.d(TAG, "onCreateView: retrieveUsers completion")
             when {
                 true -> recyclerViewSetting(mList)
                 false -> Log.d(TAG, "onCreateView: 데이터 호출 실패")
             }
-        }
+        })
 
 
         view.search_edit_text.onMyTextChanged {
 
-            if (it != null) {
 
-                if (it.isNullOrEmpty()) {
-                    Log.d(TAG, "onCreateView: 검색 : $it")
-                    recycler_view_search.visibility = View.VISIBLE
+            if (!it.isNullOrEmpty()) {
 
-                    searchUsers(it.toString().toLowerCase(), completion = {
-                        when {
-                            true -> {
-                                userAdapter.submitList(mList)
-                                userAdapter.notifyDataSetChanged()
-                            }
-                            else -> {
-                                Log.d(TAG, "onCreateView: 데이터 호출 실패")
-                            }
 
+                Log.d(TAG, "onCreateView: 검색 : $it")
+                recycler_view_search.visibility = View.VISIBLE
+
+                searchUsers(it.toString().toLowerCase(), completion = {
+                    when {
+                        true -> {
+                            recycler_view_search.visibility = View.VISIBLE
+                            userAdapter.submitList(mList)
+                            userAdapter.notifyDataSetChanged()
                         }
-                    })
+                        else -> {
+                            Log.d(TAG, "onCreateView: 데이터 호출 실패")
+                        }
 
-                } else {
-                    recycler_view_search.visibility = View.INVISIBLE
-                }
+                    }
+                })
+
+            } else {
+                retrieveUsers(completion = {
+                    Log.d(TAG, "onCreateView: retrieveUsers completion")
+                    when {
+                        true -> recyclerViewSetting(mList)
+                        false -> Log.d(TAG, "onCreateView: 데이터 호출 실패")
+                    }
+                })
             }
         }
 
@@ -108,6 +119,7 @@ class SearchFragment : Fragment(), IFollowButton {
     }
 
     private fun searchUsers(searchKeyword: String, completion: (Boolean) -> Unit) {
+        Log.d(TAG, "searchUsers: 진입")
         val query =
             FirebaseDatabase.getInstance().reference
                 .child("Users")
@@ -117,7 +129,6 @@ class SearchFragment : Fragment(), IFollowButton {
 
         query.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                Log.d(TAG, "onDataChange: 데이터 호출 성공 : ")
                 mList.clear()
 
                 for (data in snapshot.children) {
@@ -133,6 +144,7 @@ class SearchFragment : Fragment(), IFollowButton {
                 } else {
                     completion(false)
                 }
+
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -145,21 +157,92 @@ class SearchFragment : Fragment(), IFollowButton {
 
 
     private fun recyclerViewSetting(users: ArrayList<User>) {
+        Log.d(TAG, "recyclerViewSetting: ")
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
 
         recycler_view_search.apply {
+            visibility = View.VISIBLE
             this.setHasFixedSize(true)
             this.layoutManager = layoutManager
 
             userAdapter.submitList(users)
             adapter = userAdapter
 
+
         }
 
     }
 
-    override fun onFollowButtonClick(position: Int) {
+    override fun onFollowButtonClick(position: Int, buttonText: String) {
 
+        if (!mList.isNullOrEmpty() && mList.size > 0) {
+
+            Log.d(TAG, "onFollowButtonClick: 버튼 텍스트 $buttonText")
+            when (buttonText) {
+            
+                
+                "Follow" -> {
+                    getFirebaseUser()?.uid.let {
+                        FirebaseDatabase.getInstance().reference
+                            .child("Follow").child(it.toString())
+                            .child("Following").child(mList[position].getUid())
+                            .setValue(true).addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    Log.d(TAG, "onFollowButtonClick: follow 성공")
+
+                                    getFirebaseUser()?.uid.let { it2 ->
+
+                                        FirebaseDatabase.getInstance().reference
+                                            .child("Follow").child(mList[position].getUid())
+                                            .child("Followers").child(it2.toString())
+                                            .setValue(true).addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    Log.d(TAG, "onFollowButtonClick: Followers 성공")
+                                                }
+                                            }
+
+                                    }
+
+
+                                }
+                            }
+
+                    }
+                }
+
+                else -> {
+                    getFirebaseUser()?.uid.let {
+
+                        FirebaseDatabase.getInstance().reference
+                            .child("Follow").child(it.toString())
+                            .child("Following").child(mList[position].getUid())
+                            .removeValue().addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    Log.d(TAG, "onFollowButtonClick: follow 제거 성공")
+
+                                    getFirebaseUser()?.uid.let { it2 ->
+
+                                        FirebaseDatabase.getInstance().reference
+                                            .child("Follow").child(mList[position].getUid())
+                                            .child("Followers").child(it2.toString())
+                                            .removeValue().addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    Log.d(TAG, "onFollowButtonClick: Followers 제거 성공")
+                                                }
+                                            }
+
+                                    }
+
+
+                                }
+                            }
+
+                    }
+                }
+            }
+
+        }
     }
+
 
 }

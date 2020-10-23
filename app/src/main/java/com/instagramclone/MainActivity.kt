@@ -1,15 +1,11 @@
 package com.instagramclone
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.instagramclone.fragment.HomeFragment
 import com.instagramclone.fragment.NotificationFragment
 import com.instagramclone.fragment.ProfileFragment
@@ -44,20 +40,24 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home -> selectedFragment = HomeFragment()
                 R.id.nav_search -> selectedFragment = SearchFragment()
                 R.id.nav_add_post -> {
+                    it.isChecked = false
+                    selectedFragment = null
+                    startActivity(Intent(this, AddPostActivity::class.java))
                 }
                 R.id.nav_notification -> selectedFragment = NotificationFragment()
                 R.id.nav_profile -> selectedFragment = ProfileFragment()
             }
 
-            moveToFragment(selectedFragment!!)
-
+            if (selectedFragment != null) {
+                moveToFragment(selectedFragment!!)
+            }
             true
         }
 
     private fun moveToFragment(fragment: Fragment) {
         Log.d(TAG, "moveToFragment: ")
         var fragmentTrans = supportFragmentManager.beginTransaction()
-        fragmentTrans.replace(R.id.fragrment_container, fragment)
+        fragmentTrans.replace(R.id.fragment_container, fragment)
         fragmentTrans.commit()
     }
 

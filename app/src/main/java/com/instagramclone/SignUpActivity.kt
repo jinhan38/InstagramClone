@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.instagramclone.Constants.BASE_URL
 import kotlinx.android.synthetic.main.activity_sign_up.*
 
 class SignUpActivity : AppCompatActivity() {
@@ -99,8 +100,8 @@ class SignUpActivity : AppCompatActivity() {
         userMap["username"] = userName.toLowerCase()
         userMap["email"] = email
         userMap["bio"] = "인스타 클론앱 제작중"
-        userMap["image"] =
-            "https://firebasestorage.googleapis.com/v0/b/instagramclone-ed298.appspot.com/o/Default%20Images%2Fprofile.png?alt=media&token=94f49350-beb9-4e46-87a4-6ffcfeed59b2"
+        userMap["image"] = BASE_URL
+
 
         usersRef.child(currentUserID).setValue(userMap)
             .addOnCompleteListener { task ->

@@ -1,18 +1,27 @@
 package com.instagramclone.adapter
 
+import android.content.Context
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.instagramclone.App
 import com.instagramclone.Constants.TAG
 import com.instagramclone.R
 import com.instagramclone.`interface`.IFollowButton
+import com.instagramclone.fragment.ProfileFragment
+import com.instagramclone.getFirebaseUser
 import com.instagramclone.model.User
 import kotlinx.android.synthetic.main.user_item_layout.view.*
 
 class UserAdapterViewHolder(itemView: View, iFollowButton: IFollowButton) :
-    RecyclerView.ViewHolder(itemView) {
+    RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
 
     private var iFollowButton: IFollowButton? = null
@@ -24,19 +33,58 @@ class UserAdapterViewHolder(itemView: View, iFollowButton: IFollowButton) :
 
     init {
         this.iFollowButton = iFollowButton
-        follow_btn_search.setOnClickListener {
-            Log.d(TAG, "follow 버튼 클릭: ")
-        }
+        follow_btn_search.setOnClickListener(this)
+
+
     }
 
+    /**
+     * recyclerView
+     */
     fun bindWithView(user: User) {
+        val imageView = user_profile_image_search as ImageView
         Glide.with(App.instance)
-            .load(user.image)
+            .load(user.getImage())
             .placeholder(R.drawable.profile)
-            .into(user_profile_image_search)
+            .into(imageView)
 
-        user_full_name_search.text = user.fullname
-        user_name_search.text = user.username
+        user_full_name_search.text = user.getFullname()
+        user_name_search.text = user.getUsername()
+
+        val followingRef = getFirebaseUser()?.uid.let {
+            FirebaseDatabase.getInstance().reference
+                .child("Follow").child(it.toString())
+                .child("Following")
+        }
+
+        followingRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.child(user.getUid()).exists()) {
+                    follow_btn_search.text = "Following"
+                } else {
+                    follow_btn_search.text = "Follow"
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d(TAG, "onCancelled: 통신 에러 : $error")
+            }
+
+        })
+
+
+
+    }
+
+    override fun onClick(p0: View?) {
+        when (p0) {
+            follow_btn_search -> {
+                this.iFollowButton?.onFollowButtonClick(
+                    adapterPosition,
+                    follow_btn_search.text.toString()
+                )
+            }
+        }
     }
 
 }
