@@ -18,6 +18,7 @@ import com.instagramclone.`interface`.IFollowButton
 import com.instagramclone.adapter.UserAdapter
 import com.instagramclone.utils.getFirebaseUser
 import com.instagramclone.model.User
+import com.instagramclone.utils.getFirebaseDatabase
 import com.instagramclone.utils.onMyTextChanged
 import kotlinx.android.synthetic.main.fragment_search.view.*
 
@@ -197,6 +198,9 @@ class SearchFragment : Fragment(), IFollowButton {
                                             .setValue(true).addOnCompleteListener { task ->
                                                 if (task.isSuccessful) {
                                                     Log.d(TAG, "onFollowButtonClick: Followers 성공")
+                                                    getUserData(completion = {username ->
+                                                        addNotification(mList[position].getUid(), username)
+                                                    })
                                                 }
                                             }
 
@@ -243,5 +247,36 @@ class SearchFragment : Fragment(), IFollowButton {
         }
     }
 
+
+    private fun getUserData(completion: (String) -> Unit) {
+        val userRef = getFirebaseDatabase().reference.child("Users").child(getFirebaseUser()!!.uid)
+        userRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val user = snapshot.getValue(User::class.java)
+                    completion(user!!.getUsername())
+                }
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
+
+    }
+
+    private fun addNotification(userId: String, username: String) {
+        val notificationRef = getFirebaseDatabase().reference.child("Notifications").child(userId)
+
+        val notificationMap = HashMap<String, Any>()
+
+        notificationMap["userId"] = getFirebaseUser()!!.uid
+        notificationMap["text"] = "${username}님이 팔로우를 시작했습니다."
+        notificationMap["postId"] = ""
+        notificationMap["ispost"] = "false"
+
+        notificationRef.push().setValue(notificationMap)
+    }
 
 }

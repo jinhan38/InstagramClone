@@ -29,6 +29,7 @@ class CommentsActivity : AppCompatActivity() {
     private var publisherId = ""
     private var firebaseUser: FirebaseUser? = null
     private var commentsList = ArrayList<Comment>()
+    lateinit var commentText : String
     private lateinit var commentsAdapter: CommentsAdapter
 
 
@@ -81,7 +82,6 @@ class CommentsActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
             }
 
         })
@@ -96,11 +96,14 @@ class CommentsActivity : AppCompatActivity() {
         commentsMap["comment"] = add_comment.text.toString()
         commentsMap["publisher"] = getFirebaseUser()!!.uid
 
-        commentsRef.push().setValue(commentsMap).addOnCompleteListener {
-            finish()
-        }
+        commentsRef.push().setValue(commentsMap)
 
+        commentText = add_comment.text.toString()
         add_comment!!.text.clear()
+
+        addNotification()
+
+
 
     }
 
@@ -161,9 +164,19 @@ class CommentsActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
             }
 
         })
+    }
+
+    private fun addNotification() {
+        val notificationRef = getFirebaseDatabase().reference.child("Notifications").child(publisherId)
+        val notificationMap = HashMap<String, Any>()
+        notificationMap["userId"] = getFirebaseUser()!!.uid
+        notificationMap["text"] = "commented : $commentText"
+        notificationMap["postId"] = postId
+        notificationMap["ispost"] = "true"
+
+        notificationRef.push().setValue(notificationMap)
     }
 }

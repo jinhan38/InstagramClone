@@ -116,6 +116,7 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/total_followers_wrap"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="7dp"
@@ -142,6 +143,7 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/total_following_wrap"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="7dp"
@@ -248,7 +250,7 @@
                 android:id="@+id/recycler_view_saved_pic"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </LinearLayout>
 

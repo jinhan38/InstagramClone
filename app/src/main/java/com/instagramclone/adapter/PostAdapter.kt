@@ -15,7 +15,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.instagramclone.R
 import com.instagramclone.activity.CommentsActivity
+import com.instagramclone.activity.ShowUsersActivity
 import com.instagramclone.model.Post
+import com.instagramclone.model.User
 import com.instagramclone.utils.App
 import com.instagramclone.utils.Constants.TAG
 import com.instagramclone.utils.getFirebaseDatabase
@@ -25,7 +27,7 @@ import kotlinx.android.synthetic.main.posts_layout.view.*
 class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
 
     private var postList = ArrayList<Post>()
-    private var context : Context? = null
+    private var context: Context? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostAdapterViewHolder {
         Log.d(TAG, "onCreateViewHolder: 진입")
@@ -37,20 +39,30 @@ class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
 
     override fun onBindViewHolder(holder: PostAdapterViewHolder, position: Int) {
         Log.d(TAG, "onBindViewHolder: 진입")
+
         val post = postList[position]
+
         holder.bindWithView(post)
-
-
-
 
         holder.itemView.post_image_like_btn.apply {
             setOnClickListener {
                 if (this.tag == "Like") {
+
                     getFirebaseDatabase().reference.child("Likes")
                         .child(post.postId)
                         .child(getFirebaseUser()!!.uid)
                         .setValue(true)
+
+                    getUserData(completion = {
+                        addNotification(
+                            userId = post.publisher,
+                            postId = post.postId,
+                            username = it
+                        )
+                    })
+
                 } else {
+
                     getFirebaseDatabase().reference.child("Likes")
                         .child(post.postId)
                         .child(getFirebaseUser()!!.uid)
@@ -58,8 +70,6 @@ class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
 
 //                    val intent = Intent(App.instance, MainActivity::class.java)
 //                    App.instance.startActivity(intent)
-
-
                 }
 
                 numberOrLikes(holder.itemView.likes, post.postId)
@@ -87,6 +97,14 @@ class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
         isLikes(post.postId, holder.itemView.post_image_like_btn)
         numberOrLikes(holder.itemView.likes, post.postId)
         getTotalComments(holder.itemView.comments, post.postId)
+
+        holder.itemView.likes.setOnClickListener {
+            Log.d(TAG, "onBindViewHolder: 포스트 어댑터 ${post.publisher}")
+            val intent = Intent(context, ShowUsersActivity::class.java)
+            intent.putExtra("id", post.postId)
+            intent.putExtra("title", "likes")
+            context!!.startActivity(intent)
+        }
 
 
     }
@@ -122,7 +140,6 @@ class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
         commentsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-
 
 
                     comments.text = "댓글 ${snapshot.childrenCount}개 보기"
@@ -165,6 +182,40 @@ class PostAdapter() : RecyclerView.Adapter<PostAdapterViewHolder>() {
 
         })
 
+    }
+
+
+    private fun getUserData(completion: (String) -> Unit) {
+        val userRef = getFirebaseDatabase().reference.child("Users").child(getFirebaseUser()!!.uid)
+        userRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val user = snapshot.getValue(User::class.java)
+                    completion(user!!.getUsername())
+                }
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
+
+    }
+
+    private fun addNotification(userId: String, postId: String, username: String) {
+        val notificationRef = getFirebaseDatabase().reference.child("Notifications").child(
+            userId
+        )
+
+        val notificationMap = HashMap<String, Any>()
+
+        notificationMap["userId"] = getFirebaseUser()!!.uid
+        notificationMap["text"] = "${username}님이 좋아요를 눌렀습니다."
+        notificationMap["postId"] = postId
+        notificationMap["ispost"] = "true"
+
+        notificationRef.push().setValue(notificationMap)
     }
 
     override fun getItemCount(): Int {

@@ -3,9 +3,9 @@ package com.instagramclone.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.instagramclone.R
 import com.instagramclone.fragment.HomeFragment
 import com.instagramclone.fragment.NotificationFragment
@@ -13,7 +13,7 @@ import com.instagramclone.fragment.ProfileFragment
 import com.instagramclone.fragment.SearchFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
 
     companion object {
         private const val TAG = "MainActivity"
@@ -61,5 +61,7 @@ class MainActivity : AppCompatActivity() {
         fragmentTrans.replace(R.id.fragment_container, fragment)
         fragmentTrans.commit()
     }
+
+
 
 }
