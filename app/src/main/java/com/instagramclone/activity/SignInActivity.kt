@@ -1,4 +1,4 @@
-package com.instagramclone
+package com.instagramclone.activity
 
 import android.app.ProgressDialog
 import android.content.Intent
@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.instagramclone.R
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : AppCompatActivity() {

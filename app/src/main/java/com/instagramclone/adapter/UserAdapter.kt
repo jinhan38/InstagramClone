@@ -1,13 +1,11 @@
 package com.instagramclone.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.instagramclone.App
-import com.instagramclone.Constants.TAG
+import com.instagramclone.utils.App
 import com.instagramclone.R
 import com.instagramclone.`interface`.IFollowButton
 import com.instagramclone.fragment.ProfileFragment

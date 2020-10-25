@@ -1,4 +1,4 @@
-package com.instagramclone
+package com.instagramclone.activity
 
 import android.app.ProgressDialog
 import android.content.Intent
@@ -10,7 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.instagramclone.Constants.BASE_URL
+import com.instagramclone.utils.Constants.BASE_URL
+import com.instagramclone.R
 import kotlinx.android.synthetic.main.activity_sign_up.*
 
 class SignUpActivity : AppCompatActivity() {
@@ -109,6 +110,9 @@ class SignUpActivity : AppCompatActivity() {
                     progressDialog.dismiss()
                     Toast.makeText(this, "회원가입 완료", Toast.LENGTH_SHORT).show()
 
+                    FirebaseDatabase.getInstance().reference.child("Follow").child(currentUserID).child("Following").child(currentUserID)
+                        .setValue(true)
+                    
                     val intent = Intent(this, SignInActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                     startActivity(intent)

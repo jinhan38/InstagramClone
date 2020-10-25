@@ -1,4 +1,4 @@
-package com.instagramclone
+package com.instagramclone.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,6 +6,7 @@ import android.util.Log
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.instagramclone.R
 import com.instagramclone.fragment.HomeFragment
 import com.instagramclone.fragment.NotificationFragment
 import com.instagramclone.fragment.ProfileFragment

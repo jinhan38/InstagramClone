@@ -1,22 +1,19 @@
 package com.instagramclone.adapter
 
-import android.content.Context
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.instagramclone.App
-import com.instagramclone.Constants.TAG
+import com.instagramclone.utils.App
+import com.instagramclone.utils.Constants.TAG
 import com.instagramclone.R
 import com.instagramclone.`interface`.IFollowButton
-import com.instagramclone.fragment.ProfileFragment
-import com.instagramclone.getFirebaseUser
+import com.instagramclone.utils.getFirebaseUser
 import com.instagramclone.model.User
 import kotlinx.android.synthetic.main.user_item_layout.view.*
 

@@ -9,24 +9,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.instagramclone.AccountSettingsActivity
-import com.instagramclone.App
-import com.instagramclone.Constants.TAG
+import com.instagramclone.activity.AccountSettingsActivity
+import com.instagramclone.utils.App
+import com.instagramclone.utils.Constants.TAG
 import com.instagramclone.R
-import com.instagramclone.getFirebaseUser
+import com.instagramclone.adapter.MyImagesAdapter
+import com.instagramclone.model.Post
+import com.instagramclone.utils.getFirebaseUser
 import com.instagramclone.model.User
+import com.instagramclone.utils.getFirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.fragment_profile.view.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class ProfileFragment : Fragment() {
 
     private lateinit var profileId: String
+    private var postList = ArrayList<Post>()
 
+    //    private var postList: List<Post>? = null
+    private var currentUid = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,10 +46,26 @@ class ProfileFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
+        myPhotos(completion = {
+            if (postList.count() > 0) {
+                view.recycler_view_upload_pic.apply {
+                    var gridLayoutManager = GridLayoutManager(activity, 3)
+                    this.layoutManager = gridLayoutManager
+                    setHasFixedSize(true)
+                    val myImagesAdapter = MyImagesAdapter()
+                    myImagesAdapter.submitList(postList)
+                    adapter = myImagesAdapter
+
+                }
+            }
+
+        })
+
+
         val pref = App.instance.getSharedPreferences("PREFS", Context.MODE_PRIVATE)
 
         if (pref != null) {
-            var currentUid = ""
+
 
             this.profileId = pref.getString("profileId", "none").toString()
             Log.d(TAG, "onCreateView: profileid : $profileId")
@@ -58,12 +85,11 @@ class ProfileFragment : Fragment() {
         }
 
 
-
-
         view.edit_account_settings_btn.setOnClickListener {
 
             when (edit_account_settings_btn.text) {
                 getString(R.string.profile_edit) -> {
+
                     startActivity(Intent(context, AccountSettingsActivity::class.java))
 
                 }
@@ -122,6 +148,42 @@ class ProfileFragment : Fragment() {
 
         return view
     }
+
+
+    /**
+     * 현재 보여주는 프로필이 등록한 post 데이터 가져오기
+     */
+    private fun myPhotos(completion: () -> Unit) {
+        val postsRef = getFirebaseDatabase().reference.child("Posts")
+
+        postsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    postList.clear()
+
+
+                    for (data in snapshot.children) {
+
+                        val post = data.getValue(Post::class.java)
+                        if (post?.publisher == currentUid) {
+                            postList.add(post)
+
+                        }
+                        postList.reverse()
+                    }
+
+                    completion()
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+    }
+
 
     private fun checkFollowAndFollowingButtonStatus() {
         val followingRef = getFirebaseUser()?.uid.let {
@@ -187,7 +249,7 @@ class ProfileFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 if (snapshot != null) {
-                    view?.total_following?.text = snapshot.childrenCount.toString()
+                    view?.total_following?.text = (snapshot.childrenCount - 1).toString()
                 }
             }
 
@@ -236,7 +298,13 @@ class ProfileFragment : Fragment() {
         })
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart: 진입")
+    }
+
     override fun onPause() {
+        Log.d(TAG, "onPause: 진입")
         super.onPause()
         val pref = App.instance.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
         pref.putString("profileId", getFirebaseUser()?.uid)
@@ -244,6 +312,7 @@ class ProfileFragment : Fragment() {
     }
 
     override fun onStop() {
+        Log.d(TAG, "onStop: 진입")
         super.onStop()
         val pref = App.instance.getSharedPreferences("PREFS", Context.MODE_PRIVATE).edit()
         pref.putString("profileId", getFirebaseUser()?.uid)

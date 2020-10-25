@@ -1,4 +1,4 @@
-package com.instagramclone
+package com.instagramclone.utils
 
 import android.app.Application
 

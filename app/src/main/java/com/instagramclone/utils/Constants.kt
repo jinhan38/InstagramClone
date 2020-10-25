@@ -1,4 +1,4 @@
-package com.instagramclone
+package com.instagramclone.utils
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser

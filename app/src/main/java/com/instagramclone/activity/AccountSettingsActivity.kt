@@ -1,17 +1,16 @@
-package com.instagramclone
+package com.instagramclone.activity
 
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.android.gms.tasks.Continuation
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -22,13 +21,15 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
-import com.instagramclone.Constants.BASE_URL
+import com.instagramclone.utils.App
+import com.instagramclone.utils.Constants.TAG
+import com.instagramclone.R
+import com.instagramclone.fragment.ProfileFragment
+import com.instagramclone.utils.getFirebaseDatabase
+import com.instagramclone.utils.getFirebaseUser
 import com.instagramclone.model.User
-import kotlinx.android.synthetic.main.activity_account_settings.*
-import kotlinx.android.synthetic.main.fragment_profile.view.*
-import com.instagramclone.Constants.TAG
 import com.theartofdev.edmodo.cropper.CropImage
-import com.theartofdev.edmodo.cropper.CropImageView
+import kotlinx.android.synthetic.main.activity_account_settings.*
 
 class AccountSettingsActivity : AppCompatActivity() {
 
@@ -45,12 +46,14 @@ class AccountSettingsActivity : AppCompatActivity() {
         storageProfilePicRef = FirebaseStorage.getInstance().reference.child("profilePicture")
 
         logout_btn_profile.setOnClickListener {
+
             FirebaseAuth.getInstance().signOut()
 
             val intent = Intent(this, SignInActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
             finish()
+
         }
 
         close_profile_btn.setOnClickListener {
