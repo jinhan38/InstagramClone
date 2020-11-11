@@ -45,6 +45,7 @@ class AddPostActivity : AppCompatActivity() {
     }
 
     private fun uploadImage() {
+
         if (imageUri == null) Toast.makeText(this, "이미지를 추가해주세요", Toast.LENGTH_SHORT).show()
         when {
 

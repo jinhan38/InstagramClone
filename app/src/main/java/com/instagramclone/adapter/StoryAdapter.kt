@@ -1,18 +1,31 @@
 package com.instagramclone.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.instagramclone.AddStoryActivity
 import com.instagramclone.R
 import com.instagramclone.model.Story
+import com.instagramclone.model.User
+import com.instagramclone.utils.App
 import com.instagramclone.utils.Constants.TAG
+import kotlinx.android.synthetic.main.add_story_item.view.*
+import kotlinx.android.synthetic.main.fragment_profile.view.*
 
 class StoryAdapter : RecyclerView.Adapter<StoryAdapterViewHolder>() {
 
     private var storyList = ArrayList<Story>()
+    lateinit var context: Context
 
 
     override fun getItemViewType(position: Int): Int {
@@ -24,6 +37,8 @@ class StoryAdapter : RecyclerView.Adapter<StoryAdapterViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoryAdapterViewHolder {
+
+        context = parent.context
 
         return if (viewType == 0) {
             val view =
@@ -40,11 +55,28 @@ class StoryAdapter : RecyclerView.Adapter<StoryAdapterViewHolder>() {
 
     override fun onBindViewHolder(holder: StoryAdapterViewHolder, position: Int) {
 
+//        holder.userSetting(storyList[position], completion = {
+//            notifyDataSetChanged()
+//        })
+
         if (storyList.size == 0) {
-            holder.storyAddClick()
+
+            holder.itemView.story_add_btn.setOnClickListener {
+                Log.d(TAG, "onBindViewHolder: 클릭 클릭")
+                holder.addStory(storyList[position])
+            }
+        }
+
+        if (storyList.size > 0) {
+
+            if (position != 0) {
+
+                holder.bindWithView(storyList[position])
+
+            }
+
         } else {
-            val story = storyList[position]
-            holder.bindWithView(story)
+            Log.d(TAG, "onBindViewHolder: 스토리 사이즈 0")
         }
 
 

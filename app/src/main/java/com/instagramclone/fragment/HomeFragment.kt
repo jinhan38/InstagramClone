@@ -57,7 +57,6 @@ class HomeFragment : Fragment() {
         }
 
         view.recycler_view_story.apply {
-
             val horizontalLayoutManager =
                 LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, true)
             horizontalLayoutManager.stackFromEnd = true
@@ -103,20 +102,24 @@ class HomeFragment : Fragment() {
     }
 
     private fun retrieveStories() {
+        
+        storyList.clear()
+        //어댑터의 첫 포지션은 추가하는 이미지다
+        //그래서 비어있는 story data를 넣는다
+        storyList.add(Story())
+
+        Log.d(TAG, "onDataChange: 스토리 리스트 추가 $storyList")
+        
         val storyRef = getFirebaseDatabase().reference.child("Story")
 
         storyRef.addValueEventListener(object : ValueEventListener {
+
             override fun onDataChange(snapshot: DataSnapshot) {
 
 
                 if (snapshot.exists()) {
 
                     val timeCurrent = System.currentTimeMillis()
-                    storyList.clear()
-
-                    //어댑터의 첫 포지션은 추가하는 이미지다
-                    //그래서 비어있는 story data를 넣는다
-                    storyList.add(Story())
 
                     for (id in followingList!!) {
                         var countStory = 0
@@ -135,13 +138,13 @@ class HomeFragment : Fragment() {
                             storyList.add(story!!)
                         }
 
-
                     }
 
                     storyAdapter.submitList(storyList = storyList)
                     storyAdapter.notifyDataSetChanged()
 
                 }
+
             }
 
             override fun onCancelled(error: DatabaseError) {
